@@ -14,8 +14,8 @@ export CUDA_VISIBLE_DEVICES=0,1,2,3
 # 运行训练脚本
 python3 -m examples.search.train_search_grpo \
     algorithm.adv_estimator=grpo \
-    data.train_batch_size=64 \
-    data.val_batch_size=128 \
+    data.train_batch_size=128 \
+    data.val_batch_size=400 \
     data.max_prompt_length=2048 \
     data.max_response_length=2048 \
     actor_rollout_ref.model.path=Qwen/Qwen3-4B-Instruct-2507 \
@@ -40,7 +40,7 @@ python3 -m examples.search.train_search_grpo \
     actor_rollout_ref.rollout.enforce_eager=False \
     actor_rollout_ref.rollout.temperature=0.7 \
     actor_rollout_ref.rollout.gpu_memory_utilization=0.85 \
-    actor_rollout_ref.rollout.n=8 \
+    actor_rollout_ref.rollout.n=5 \
     actor_rollout_ref.rollout.val_kwargs.n=1 \
     actor_rollout_ref.rollout.val_kwargs.temperature=0.7 \
     actor_rollout_ref.rollout.val_kwargs.top_p=0.8 \
@@ -63,7 +63,7 @@ python3 -m examples.search.train_search_grpo \
     trainer.test_freq=10 \
     trainer.default_hdfs_dir=null \
     trainer.total_epochs=50 \
-    retrieval_service_url="http://10.244.209.173:8000/retrieve" \
-    search_topk=5 \
-    search_timeout=60 \
-    parser_name=qwen
+    +retrieval_service_url="http://10.244.209.173:8000/retrieve" \
+    +search_topk=5 \
+    +search_timeout=60 \
+    +parser_name=qwen

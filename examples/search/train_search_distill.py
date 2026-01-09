@@ -1,6 +1,7 @@
 """使用 GRPO + 在线蒸馏训练搜索 agent"""
 
 import hydra
+from omegaconf import OmegaConf
 
 from rllm.agents.system_prompts import SEARCH_SYSTEM_PROMPT
 from rllm.agents.tool_agent import ToolAgent
@@ -38,9 +39,9 @@ def main(config):
         val_dataset = train_dataset
     
     # 配置搜索工具
-    retrieval_service_url = config.get("retrieval_service_url", "http://10.244.209.173:8000/retrieve")
-    topk = config.get("search_topk", 5)
-    timeout = config.get("search_timeout", 60)
+    retrieval_service_url = OmegaConf.select(config, "retrieval_service_url", default="http://10.244.209.173:8000/retrieve")
+    topk = OmegaConf.select(config, "search_topk", default=5)
+    timeout = OmegaConf.select(config, "search_timeout", default=60)
     
     tool_map = {
         "search": SearchTool(
@@ -51,7 +52,7 @@ def main(config):
     }
     
     # 环境配置
-    max_steps = config.get("rllm", {}).get("agent", {}).get("max_steps", 20)
+    max_steps = OmegaConf.select(config, "rllm.agent.max_steps", default=20)
     env_args = {
         "max_steps": max_steps,
         "tool_map": tool_map,
@@ -59,7 +60,7 @@ def main(config):
     }
     
     # Agent 配置
-    parser_name = config.get("parser_name", "qwen")
+    parser_name = OmegaConf.select(config, "parser_name", default="qwen")
     agent_args = {
         "system_prompt": SEARCH_SYSTEM_PROMPT,
         "tool_map": tool_map,
@@ -67,20 +68,20 @@ def main(config):
     }
     
     # 打印蒸馏配置信息
-    if hasattr(config, "rllm") and hasattr(config.rllm, "distill"):
-        distill_config = config.rllm.distill
-        if distill_config.get("enable", False):
-            teacher_args = distill_config.get("teacher_rollout_args", {})
-            print("\n" + "=" * 60)
-            print("蒸馏配置:")
-            print(f"  教师模型: {teacher_args.get('model', 'Not specified')}")
-            print(f"  教师服务地址: {teacher_args.get('base_url', 'Not specified')}")
-            print(f"  共享 tokenizer: {distill_config.get('shared_tokenizer', False)}")
-            print("=" * 60 + "\n")
-        else:
-            print("\n警告: rllm.distill.enable=False，蒸馏未启用\n")
+    distill_enable = OmegaConf.select(config, "rllm.distill.enable", default=False)
+    if distill_enable:
+        teacher_model = OmegaConf.select(config, "rllm.distill.teacher_rollout_args.model", default="Not specified")
+        teacher_base_url = OmegaConf.select(config, "rllm.distill.teacher_rollout_args.base_url", default="Not specified")
+        shared_tokenizer = OmegaConf.select(config, "rllm.distill.shared_tokenizer", default=False)
+        
+        print("\n" + "=" * 60)
+        print("蒸馏配置:")
+        print(f"  教师模型: {teacher_model}")
+        print(f"  教师服务地址: {teacher_base_url}")
+        print(f"  共享 tokenizer: {shared_tokenizer}")
+        print("=" * 60 + "\n")
     else:
-        print("\n警告: 未找到蒸馏配置，将使用纯 GRPO 训练\n")
+        print("\n警告: rllm.distill.enable=False 或未配置，将使用纯 GRPO 训练\n")
     
     # 创建训练器
     trainer = AgentTrainer(

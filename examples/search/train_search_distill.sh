@@ -82,10 +82,10 @@ python3 -m examples.search.train_search_distill \
     trainer.test_freq=10 \
     trainer.default_hdfs_dir=null \
     trainer.total_epochs=50 \
-    retrieval_service_url="http://10.244.209.173:8000/retrieve" \
-    search_topk=5 \
-    search_timeout=60 \
-    parser_name=qwen
+    +retrieval_service_url="http://10.244.209.173:8000/retrieve" \
+    +search_topk=5 \
+    +search_timeout=60 \
+    +parser_name=qwen
 
 # 训练完成后清理
 pkill -9 -f 'ray::WorkerDict'

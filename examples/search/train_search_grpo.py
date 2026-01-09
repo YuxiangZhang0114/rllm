@@ -1,6 +1,7 @@
 """使用 GRPO 训练搜索 agent（不带蒸馏）"""
 
 import hydra
+from omegaconf import OmegaConf
 
 from rllm.agents.system_prompts import SEARCH_SYSTEM_PROMPT
 from rllm.agents.tool_agent import ToolAgent
@@ -35,9 +36,9 @@ def main(config):
     
     # 配置搜索工具
     # 从配置中读取检索服务地址，如果没有则使用默认值
-    retrieval_service_url = config.get("retrieval_service_url", "http://10.244.209.173:8000/retrieve")
-    topk = config.get("search_topk", 5)
-    timeout = config.get("search_timeout", 60)
+    retrieval_service_url = OmegaConf.select(config, "retrieval_service_url", default="http://10.244.209.173:8000/retrieve")
+    topk = OmegaConf.select(config, "search_topk", default=5)
+    timeout = OmegaConf.select(config, "search_timeout", default=60)
     
     tool_map = {
         "search": SearchTool(
@@ -48,7 +49,7 @@ def main(config):
     }
     
     # 环境配置
-    max_steps = config.get("rllm", {}).get("agent", {}).get("max_steps", 20)
+    max_steps = OmegaConf.select(config, "rllm.agent.max_steps", default=20)
     env_args = {
         "max_steps": max_steps,
         "tool_map": tool_map,
@@ -56,7 +57,7 @@ def main(config):
     }
     
     # Agent 配置
-    parser_name = config.get("parser_name", "qwen")
+    parser_name = OmegaConf.select(config, "parser_name", default="qwen")
     agent_args = {
         "system_prompt": SEARCH_SYSTEM_PROMPT,
         "tool_map": tool_map,
