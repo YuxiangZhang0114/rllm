@@ -46,7 +46,7 @@ python3 -m examples.search.train_search_grpo \
     actor_rollout_ref.rollout.enforce_eager=False \
     actor_rollout_ref.rollout.max_model_len=23000 \
     actor_rollout_ref.rollout.temperature=0.7 \
-    actor_rollout_ref.rollout.gpu_memory_utilization=0.85 \
+    actor_rollout_ref.rollout.gpu_memory_utilization=0.7 \
     actor_rollout_ref.rollout.n=5 \
     actor_rollout_ref.rollout.val_kwargs.n=1 \
     actor_rollout_ref.rollout.val_kwargs.temperature=0.7 \

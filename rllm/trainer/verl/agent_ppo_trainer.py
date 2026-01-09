@@ -462,7 +462,12 @@ class AgentPPOTrainer(RayPPOTrainer):
             test_batch.non_tensor_batch["uid"] = np.array([str(uuid.uuid4()) for _ in range(len(test_batch.batch))], dtype=object)
             n_val_samples = self.config.actor_rollout_ref.rollout.val_kwargs.n
             test_batch = test_batch.repeat(repeat_times=n_val_samples, interleave=True)
-            test_batch.pop(["input_ids", "attention_mask", "position_ids"])  # these are not needed for environment based interaction
+            
+            # Safe pop: only pop keys that actually exist to avoid AssertionError in verl.protocol
+            keys_to_pop = [k for k in ["input_ids", "attention_mask", "position_ids"] if k in test_batch.batch.keys()]
+            if keys_to_pop:
+                test_batch.pop(keys_to_pop)
+                
             test_batch.meta_info = {
                 "eos_token_id": self.tokenizer.eos_token_id,
                 "pad_token_id": self.tokenizer.pad_token_id,
